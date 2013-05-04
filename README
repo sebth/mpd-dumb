@@ -33,5 +33,5 @@ Upstream inclusion
 ------------------
 
 MPD seems to currently be under a rewrite from C to C++. After the
-rewrite is done, I'll port this plugin the new MPD and try to get it
+rewrite is done, I'll port this plugin to the new MPD and try to get it
 included upstream.
