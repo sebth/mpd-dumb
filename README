@@ -8,7 +8,7 @@ $ wget http://www.musicpd.org/download/mpd/stable/mpd-0.17.4.tar.gz
 $ tar xf mpd-0.17.4.tar.gz
 $ git clone https://github.com/sebth/mpd-dumb.git
 $ cd mpd-0.17.4
-$ cp ../mpd-dumb/dumb_encoder_plugin.c src/decoder
+$ cp ../mpd-dumb/dumb_decoder_plugin.c src/decoder
 $ patch -p1 < ../mpd-dumb/mpd-0.17.4-dumb.patch
 $ ./autogen.sh
 $ make install
