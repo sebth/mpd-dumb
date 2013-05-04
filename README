@@ -1,0 +1,37 @@
+mpd-dumb contains a DUMB <http://dumb.sourceforge.net/> decoder plugin
+for MPD and a patch that adds the decoder to the MPD 0.17.4 source.
+
+How to install with MPD 0.17.4
+------------------------------
+
+$ wget http://www.musicpd.org/download/mpd/stable/mpd-0.17.4.tar.gz
+$ tar xf mpd-0.17.4.tar.gz
+$ git clone https://github.com/sebth/mpd-dumb.git
+$ cd mpd-0.17.4
+$ cp ../mpd-dumb/dumb_encoder_plugin.c src/decoder
+$ patch -p1 < ../mpd-dumb/mpd-0.17.4-dumb.patch
+$ ./autogen.sh
+$ make install
+
+Configuration parameters
+------------------------
+
+The decoder parameter "loop_count" controls how many times a module will
+loop. A value of 1 (default) disables looping. A value of 0 enables
+infinite looping.
+
+Configuration example (mpd.conf)
+--------------------------------
+
+decoder {
+	plugin "dumb"
+	# Play each module three times.
+	loop_count "3"
+}
+
+Upstream inclusion
+------------------
+
+MPD seems to currently be under a rewrite from C to C++. After the
+rewrite is done, I'll port this plugin the new MPD and try to get it
+included upstream.

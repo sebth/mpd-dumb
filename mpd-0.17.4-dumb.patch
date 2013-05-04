@@ -1,0 +1,114 @@
+--- mpd-0.17.4/Makefile.am
++++ mpd-0.17.4-dumb/Makefile.am
+@@ -508,6 +508,7 @@
+ 	$(SNDFILE_CFLAGS) \
+ 	$(AUDIOFILE_CFLAGS) \
+ 	$(LIBMIKMOD_CFLAGS) \
++	$(DUMB_CFLAGS) \
+ 	$(GME_CFLAGS) \
+ 	$(SIDPLAY_CFLAGS) \
+ 	$(FLUIDSYNTH_CFLAGS) \
+@@ -525,6 +526,7 @@
+ 	$(FLAC_LIBS) \
+ 	$(SNDFILE_LIBS) \
+ 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
++	$(DUMB_LIBS) \
+ 	$(GME_LIBS) \
+ 	$(SIDPLAY_LIBS) \
+ 	$(FLUIDSYNTH_LIBS) \
+@@ -601,6 +603,10 @@
+ DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
+ endif
+ 
++if HAVE_DUMB
++libdecoder_plugins_a_SOURCES += src/decoder/dumb_decoder_plugin.c
++endif
++
+ if ENABLE_SIDPLAY
+ libdecoder_plugins_a_SOURCES += src/decoder/sidplay_decoder_plugin.cxx
+ DECODER_SRC += src/dummy.cxx
+--- mpd-0.17.4/configure.ac
++++ mpd-0.17.4-dumb/configure.ac
+@@ -303,8 +303,13 @@
+ 
+ AC_ARG_ENABLE(modplug,
+ 	AS_HELP_STRING([--enable-modplug],
+-		[enable modplug decoder plugin]),,
+-	enable_modplug=auto)
++		[enable modplug decoder plugin (default: disable)]),,
++	enable_modplug=no)
++
++AC_ARG_ENABLE(dumb,
++	AS_HELP_STRING([--enable-dumb],
++		[enable dumb decoder plugin]),,
++	enable_dumb=auto)
+ 
+ AC_ARG_ENABLE(mpc,
+ 	AS_HELP_STRING([--disable-mpc],
+@@ -814,6 +819,15 @@
+ 	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
+ fi
+ 
++dnl -------------------------------- libdumb ----------------------------------
++MPD_AUTO_PKG_LIB(dumb, DUMB, [libdumb],
++	dumb, dumb_register_stdfiles, [-ldumb], [],
++	[libdumb module decoder plugin], [libdumb not found])
++if test x$enable_dumb = xyes; then
++	AC_DEFINE(HAVE_DUMB, 1, [Define to use libdumb])
++fi
++AM_CONDITIONAL(HAVE_DUMB, test x$enable_dumb = xyes)
++
+ dnl ----------------------------------- FAAD ----------------------------------
+ AM_PATH_FAAD()
+ 
+@@ -1086,6 +1100,7 @@
+ if
+ 	test x$enable_aac = xno &&
+ 	test x$enable_audiofile = xno &&
++	test x$enable_dumb = xno &&
+ 	test x$enable_ffmpeg = xno &&
+ 	test x$enable_flac = xno &&
+ 	test x$enable_fluidsynth = xno &&
+@@ -1546,19 +1561,20 @@
+ printf '\nFile format support:\n\t'
+ results(aac, [AAC])
+ results(sidplay, [C64 SID])
++results(dumb, [DUMB])
+ results(ffmpeg, [FFMPEG])
+ results(flac, [FLAC])
+ results(fluidsynth, [FluidSynth])
+ results(gme, [GME])
+-results(sndfile, [libsndfile])
+ printf '\n\t'
++results(sndfile, [libsndfile])
+ results(mikmod, [MikMod])
+ results(modplug, [MODPLUG])
+ results(mad, [MAD])
+ results(mpg123, [MPG123])
+ results(mp4, [MP4])
+-results(mpc, [Musepack])
+ printf '\n\t'
++results(mpc, [Musepack])
+ results(tremor, [OggTremor])
+ results(vorbis, [OggVorbis])
+ results(audiofile, [WAVE])
+--- mpd-0.17.4/src/decoder_list.c
++++ mpd-0.17.4-dumb/src/decoder_list.c
+@@ -44,6 +44,7 @@
+ extern const struct decoder_plugin wavpack_decoder_plugin;
+ extern const struct decoder_plugin modplug_decoder_plugin;
+ extern const struct decoder_plugin mikmod_decoder_plugin;
++extern const struct decoder_plugin dumb_decoder_plugin;
+ extern const struct decoder_plugin sidplay_decoder_plugin;
+ extern const struct decoder_plugin wildmidi_decoder_plugin;
+ extern const struct decoder_plugin fluidsynth_decoder_plugin;
+@@ -92,6 +93,9 @@
+ #ifdef ENABLE_MIKMOD_DECODER
+ 	&mikmod_decoder_plugin,
+ #endif
++#ifdef HAVE_DUMB
++	&dumb_decoder_plugin,
++#endif
+ #ifdef ENABLE_SIDPLAY
+ 	&sidplay_decoder_plugin,
+ #endif
