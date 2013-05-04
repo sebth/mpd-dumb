@@ -3,7 +3,7 @@
 # $Header: /var/cvsroot/gentoo-x86/media-sound/mpd/mpd-0.17.4-r2.ebuild,v 1.1 2013/04/10 12:11:44 angelos Exp $
 
 EAPI=4
-inherit eutils flag-o-matic linux-info multilib readme.gentoo systemd user
+inherit eutils flag-o-matic linux-info multilib readme.gentoo systemd user autotools
 
 DESCRIPTION="The Music Player Daemon (mpd)"
 HOMEPAGE="http://www.musicpd.org"
@@ -92,9 +92,6 @@ src_prepare() {
 	DOC_CONTENTS="If you will be starting mpd via /etc/init.d/mpd, please make
 		sure that MPD's pid_file is unset."
 
-	use dumb && cp "${FILESDIR}"/dumb_decoder_plugin.c src/decoder/
-	use dumb && epatch "${FILESDIR}"/${P}-dumb.patch
-
 	cp -f doc/mpdconf.example doc/mpdconf.dist || die "cp failed"
 	epatch "${FILESDIR}"/${PN}-0.16.conf.patch \
 		"${FILESDIR}"/${P}-mikmod-crash.patch
@@ -104,6 +101,10 @@ src_prepare() {
 			-e 's:cdio/paranoia.h:cdio/paranoia/paranoia.h:' \
 			src/input/cdio_paranoia_input_plugin.c || die
 	fi
+
+	cp "${FILESDIR}"/dumb_decoder_plugin.c src/decoder/
+	epatch "${FILESDIR}"/${P}-dumb.patch
+	eautoreconf
 }
 
 src_configure() {
@@ -135,6 +136,7 @@ src_configure() {
 		$(use_enable cdio iso9660) \
 		$(use_enable curl) \
 		$(use_enable debug) \
+		$(use_enable dumb) \
 		$(use_enable ffmpeg) \
 		$(use_enable fifo) \
 		$(use_enable flac) \
