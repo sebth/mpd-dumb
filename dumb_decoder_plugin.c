@@ -116,7 +116,7 @@ dumb_decoder_install_callbacks(DUH_SIGRENDERER *sigrenderer)
 }
 
 static DUH_SIGRENDERER *
-dumb_get_sigrenderer(DUH *duh, int channels, long pos)
+dumb_decoder_get_sigrenderer(DUH *duh, int channels, long pos)
 {
 	DUH_SIGRENDERER *sigrenderer = duh_start_sigrenderer(duh, 0, channels,
 			pos);
@@ -130,7 +130,8 @@ dumb_decoder_seek(struct decoder *decoder, DUH *duh, int channels,
 		DUH_SIGRENDERER **sigrenderer)
 {
 	long pos = decoder_seek_where(decoder) * 65536;
-	DUH_SIGRENDERER *new_sr = dumb_get_sigrenderer(duh, channels, pos);
+	DUH_SIGRENDERER *new_sr = dumb_decoder_get_sigrenderer(duh, channels,
+			pos);
 
 	if (new_sr) {
 		duh_end_sigrenderer(*sigrenderer);
@@ -160,7 +161,8 @@ dumb_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	}
 
 	dumb_decoder_get_audio_format(&audio_format);
-	sigrenderer = dumb_get_sigrenderer(duh, audio_format.channels, 0);
+	sigrenderer = dumb_decoder_get_sigrenderer(duh, audio_format.channels,
+			0);
 	if (!sigrenderer) {
 		g_warning("could not decode stream\n");
 		unload_duh(duh);
